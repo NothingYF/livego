@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"net"
 	"time"
-	"github.com/gwuhaolin/livego/utils/pool"
-	"github.com/gwuhaolin/livego/utils/pio"
+	"github.com/NothingYF/livego/utils/pool"
+	"github.com/NothingYF/livego/utils/pio"
 )
 
 const (
@@ -48,7 +48,7 @@ func (conn *Conn) Read(c *ChunkStream) error {
 	for {
 		h, _ := conn.rw.ReadUintBE(1)
 		// if err != nil {
-		// 	log.Println("read from conn error: ", err)
+		// 	logger.Println("read from conn error: ", err)
 		// 	return err
 		// }
 		format := h >> 6

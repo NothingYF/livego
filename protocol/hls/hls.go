@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"log"
-	"github.com/gwuhaolin/livego/av"
+	"github.com/NothingYF/livego/av"
 	"github.com/orcaman/concurrent-map"
+	"git.scsv.online/go/base/logger"
 )
 
 const (
@@ -58,7 +58,7 @@ func (server *Server) GetWriter(info av.Info) av.WriteCloser {
 	var s *Source
 	ok := server.conns.Has(info.Key)
 	if !ok {
-		log.Println("new hls source")
+		logger.Println("new hls source")
 		s = NewSource(info)
 		server.conns.Set(info.Key, s)
 	} else {
@@ -82,7 +82,7 @@ func (server *Server) checkStop() {
 		for item := range server.conns.IterBuffered() {
 			v := item.Val.(*Source)
 			if !v.Alive() {
-				log.Println("check stop and remove: ", v.Info())
+				logger.Println("check stop and remove: ", v.Info())
 				server.conns.Remove(item.Key)
 			}
 		}
@@ -110,7 +110,7 @@ func (server *Server) handle(w http.ResponseWriter, r *http.Request) {
 		}
 		body, err := tsCache.GenM3U8PlayList()
 		if err != nil {
-			log.Println("GenM3U8PlayList error: ", err)
+			logger.Println("GenM3U8PlayList error: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -130,7 +130,7 @@ func (server *Server) handle(w http.ResponseWriter, r *http.Request) {
 		tsCache := conn.GetCacheInc()
 		item, err := tsCache.GetItem(r.URL.Path)
 		if err != nil {
-			log.Println("GetItem error: ", err)
+			logger.Println("GetItem error: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

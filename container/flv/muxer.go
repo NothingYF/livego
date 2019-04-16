@@ -5,11 +5,11 @@ import (
 	"time"
 	"flag"
 	"os"
-	"log"
-	"github.com/gwuhaolin/livego/utils/uid"
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/av"
-	"github.com/gwuhaolin/livego/utils/pio"
+	"github.com/NothingYF/livego/utils/uid"
+	"github.com/NothingYF/livego/protocol/amf"
+	"github.com/NothingYF/livego/av"
+	"github.com/NothingYF/livego/utils/pio"
+	"git.scsv.online/go/base/logger"
 )
 
 var (
@@ -21,13 +21,13 @@ func NewFlv(handler av.Handler, info av.Info) {
 	patths := strings.SplitN(info.Key, "/", 2)
 
 	if len(patths) != 2 {
-		log.Println("invalid info")
+		logger.Println("invalid info")
 		return
 	}
 
 	w, err := os.OpenFile(*flvFile, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
-		log.Println("open file error: ", err)
+		logger.Println("open file error: ", err)
 	}
 
 	writer := NewFLVWriter(patths[0], patths[1], info.URL, w)
@@ -36,7 +36,7 @@ func NewFlv(handler av.Handler, info av.Info) {
 
 	writer.Wait()
 	// close flv file
-	log.Println("close flv file")
+	logger.Println("close flv file")
 	writer.ctx.Close()
 }
 

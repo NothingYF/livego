@@ -2,10 +2,10 @@ package cache
 
 import (
 	"bytes"
-	"log"
 
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/av"
+	"github.com/NothingYF/livego/protocol/amf"
+	"github.com/NothingYF/livego/av"
+	"git.scsv.online/go/base/logger"
 )
 
 const (
@@ -19,7 +19,7 @@ func init() {
 	b := bytes.NewBuffer(nil)
 	encoder := &amf.Encoder{}
 	if _, err := encoder.Encode(b, SetDataFrame, amf.AMF0); err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
 	}
 	setFrameFrame = b.Bytes()
 }

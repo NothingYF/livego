@@ -4,12 +4,12 @@ import (
 	"time"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"github.com/gwuhaolin/livego/utils/uid"
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/av"
-	"github.com/gwuhaolin/livego/utils/pio"
+	"github.com/NothingYF/livego/utils/uid"
+	"github.com/NothingYF/livego/protocol/amf"
+	"github.com/NothingYF/livego/av"
+	"github.com/NothingYF/livego/utils/pio"
+	"git.scsv.online/go/base/logger"
 )
 
 const (
@@ -47,7 +47,7 @@ func NewFLVWriter(app, title, url string, ctx http.ResponseWriter) *FLVWriter {
 	go func() {
 		err := ret.SendPacket()
 		if err != nil {
-			log.Println("SendPacket error:", err)
+			logger.Println("SendPacket error:", err)
 			ret.closed = true
 		}
 	}()
@@ -55,14 +55,14 @@ func NewFLVWriter(app, title, url string, ctx http.ResponseWriter) *FLVWriter {
 }
 
 func (flvWriter *FLVWriter) DropPacket(pktQue chan *av.Packet, info av.Info) {
-	log.Printf("[%v] packet queue max!!!", info)
+	logger.Debug("[%v] packet queue max!!!", info)
 	for i := 0; i < maxQueueNum-84; i++ {
 		tmpPkt, ok := <-pktQue
 		if ok && tmpPkt.IsVideo {
 			videoPkt, ok := tmpPkt.Header.(av.VideoPacketHeader)
 			// dont't drop sps config and dont't drop key frame
 			if ok && (videoPkt.IsSeq() || videoPkt.IsKeyFrame()) {
-				log.Println("insert keyframe to queue")
+				logger.Println("insert keyframe to queue")
 				pktQue <- tmpPkt
 			}
 
@@ -74,11 +74,11 @@ func (flvWriter *FLVWriter) DropPacket(pktQue chan *av.Packet, info av.Info) {
 		}
 		// try to don't drop audio
 		if ok && tmpPkt.IsAudio {
-			log.Println("insert audio to queue")
+			logger.Println("insert audio to queue")
 			pktQue <- tmpPkt
 		}
 	}
-	log.Println("packet queue len: ", len(pktQue))
+	logger.Println("packet queue len: ", len(pktQue))
 }
 
 func (flvWriter *FLVWriter) Write(p *av.Packet) (err error) {
@@ -164,7 +164,7 @@ func (flvWriter *FLVWriter) Wait() {
 }
 
 func (flvWriter *FLVWriter) Close(error) {
-	log.Println("http flv closed")
+	logger.Println("http flv closed")
 	if !flvWriter.closed {
 		close(flvWriter.packetQueue)
 		close(flvWriter.closedChan)

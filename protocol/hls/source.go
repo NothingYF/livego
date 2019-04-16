@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 	"bytes"
-	"log"
 	"errors"
-	"github.com/gwuhaolin/livego/parser"
-	"github.com/gwuhaolin/livego/av"
-	"github.com/gwuhaolin/livego/container/flv"
-	"github.com/gwuhaolin/livego/container/ts"
+	"github.com/NothingYF/livego/parser"
+	"github.com/NothingYF/livego/av"
+	"github.com/NothingYF/livego/container/flv"
+	"github.com/NothingYF/livego/container/ts"
+	"git.scsv.online/go/base/logger"
 )
 
 const (
@@ -56,7 +56,7 @@ func NewSource(info av.Info) *Source {
 	go func() {
 		err := s.SendPacket()
 		if err != nil {
-			log.Println("send packet error: ", err)
+			logger.Println("send packet error: ", err)
 			s.closed = true
 		}
 	}()
@@ -68,7 +68,7 @@ func (source *Source) GetCacheInc() *TSCacheItem {
 }
 
 func (source *Source) DropPacket(pktQue chan *av.Packet, info av.Info) {
-	log.Printf("[%v] packet queue max!!!", info)
+	logger.Debug("[%v] packet queue max!!!", info)
 	for i := 0; i < maxQueueNum-84; i++ {
 		tmpPkt, ok := <-pktQue
 		// try to don't drop audio
@@ -92,7 +92,7 @@ func (source *Source) DropPacket(pktQue chan *av.Packet, info av.Info) {
 		}
 
 	}
-	log.Println("packet queue len: ", len(pktQue))
+	logger.Println("packet queue len: ", len(pktQue))
 }
 
 func (source *Source) Write(p *av.Packet) (err error) {
@@ -120,13 +120,13 @@ func (source *Source) Write(p *av.Packet) (err error) {
 
 func (source *Source) SendPacket() error {
 	defer func() {
-		log.Printf("[%v] hls sender stop", source.info)
+		logger.Debug("[%v] hls sender stop", source.info)
 		if r := recover(); r != nil {
-			log.Println("hls SendPacket panic: ", r)
+			logger.Println("hls SendPacket panic: ", r)
 		}
 	}()
 
-	log.Printf("[%v] hls sender start", source.info)
+	logger.Debug("[%v] hls sender start", source.info)
 	for {
 		if source.closed {
 			return errors.New("closed")
@@ -140,17 +140,17 @@ func (source *Source) SendPacket() error {
 
 			err := source.demuxer.Demux(p)
 			if err == flv.ErrAvcEndSEQ {
-				log.Println(err)
+				logger.Println(err)
 				continue
 			} else {
 				if err != nil {
-					log.Println(err)
+					logger.Println(err)
 					return err
 				}
 			}
 			compositionTime, isSeq, err := source.parse(p)
 			if err != nil {
-				log.Println(err)
+				logger.Println(err)
 			}
 			if err != nil || isSeq {
 				continue
@@ -179,7 +179,7 @@ func (source *Source) cleanup() {
 }
 
 func (source *Source) Close(err error) {
-	log.Println("hls source closed: ", source.info)
+	logger.Println("hls source closed: ", source.info)
 	if !source.closed {
 		source.cleanup()
 	}

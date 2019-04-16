@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/av"
-	"log"
+	"github.com/NothingYF/livego/protocol/amf"
+	"github.com/NothingYF/livego/av"
+	"git.scsv.online/go/base/logger"
 )
 
 var (
@@ -250,7 +250,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 	if err != nil && err != io.EOF {
 		return err
 	}
-	// log.Printf("rtmp req: %#v", vs)
+	// logger.Debug("rtmp req: %#v", vs)
 	switch vs[0].(type) {
 	case string:
 		switch vs[0].(string) {
@@ -277,7 +277,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = true
-			log.Println("handle publish req done")
+			logger.Println("handle publish req done")
 		case cmdPlay:
 			if err = connServer.publishOrPlay(vs[1:]); err != nil {
 				return err
@@ -287,7 +287,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = false
-			log.Println("handle play req done")
+			logger.Println("handle play req done")
 		case cmdFcpublish:
 			connServer.fcPublish(vs)
 		case cmdReleaseStream:
@@ -295,7 +295,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 		case cmdFCUnpublish:
 		case cmdDeleteStream:
 		default:
-			log.Println("no support command=", vs[0].(string))
+			logger.Println("no support command=", vs[0].(string))
 		}
 	}
 

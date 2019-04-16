@@ -10,9 +10,9 @@ import (
 	neturl "net/url"
 	"strings"
 
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/av"
-	"log"
+	"github.com/NothingYF/livego/protocol/amf"
+	"github.com/NothingYF/livego/av"
+	"git.scsv.online/go/base/logger"
 )
 
 var (
@@ -74,7 +74,7 @@ func (connClient *ConnClient) readRespMsg() error {
 			r := bytes.NewReader(rc.Data)
 			vs, _ := connClient.decoder.DecodeBatch(r, amf.AMF0)
 
-			log.Printf("readRespMsg: vs=%v", vs)
+			logger.Debug("readRespMsg: vs=%v", vs)
 			for k, v := range vs {
 				switch v.(type) {
 				case string:
@@ -157,7 +157,7 @@ func (connClient *ConnClient) writeConnectMsg() error {
 	event["tcUrl"] = connClient.tcurl
 	connClient.curcmdName = cmdConnect
 
-	log.Printf("writeConnectMsg: connClient.transID=%d, event=%v", connClient.transID, event)
+	logger.Debug("writeConnectMsg: connClient.transID=%d, event=%v", connClient.transID, event)
 	if err := connClient.writeMsg(cmdConnect, connClient.transID, event); err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (connClient *ConnClient) writeCreateStreamMsg() error {
 	connClient.transID++
 	connClient.curcmdName = cmdCreateStream
 
-	log.Printf("writeCreateStreamMsg: connClient.transID=%d", connClient.transID)
+	logger.Debug("writeCreateStreamMsg: connClient.transID=%d", connClient.transID)
 	if err := connClient.writeMsg(cmdCreateStream, connClient.transID, nil); err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (connClient *ConnClient) writeCreateStreamMsg() error {
 		}
 
 		if err == ErrFail {
-			log.Println("writeCreateStreamMsg readRespMsg err=%v", err)
+			logger.Println("writeCreateStreamMsg readRespMsg err=%v", err)
 			return err
 		}
 	}
@@ -199,7 +199,7 @@ func (connClient *ConnClient) writePublishMsg() error {
 func (connClient *ConnClient) writePlayMsg() error {
 	connClient.transID++
 	connClient.curcmdName = cmdPlay
-	log.Printf("writePlayMsg: connClient.transID=%d, cmdPlay=%v, connClient.title=%v",
+	logger.Debug("writePlayMsg: connClient.transID=%d, cmdPlay=%v, connClient.title=%v",
 		connClient.transID, cmdPlay, connClient.title)
 
 	if err := connClient.writeMsg(cmdPlay, 0, nil, connClient.title); err != nil {
@@ -235,9 +235,9 @@ func (connClient *ConnClient) Start(url string, method string) error {
 		port = ":" + port
 	}
 	ips, err := net.LookupIP(host)
-	log.Printf("ips: %v, host: %v", ips, host)
+	logger.Debug("ips: %v, host: %v", ips, host)
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 		return err
 	}
 	remoteIP = ips[rand.Intn(len(ips))].String()
@@ -247,41 +247,41 @@ func (connClient *ConnClient) Start(url string, method string) error {
 
 	local, err := net.ResolveTCPAddr("tcp", localIP)
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 		return err
 	}
-	log.Println("remoteIP: ", remoteIP)
+	logger.Println("remoteIP: ", remoteIP)
 	remote, err := net.ResolveTCPAddr("tcp", remoteIP)
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 		return err
 	}
 	conn, err := net.DialTCP("tcp", local, remote)
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 		return err
 	}
 
-	log.Println("connection:", "local:", conn.LocalAddr(), "remote:", conn.RemoteAddr())
+	logger.Println("connection:", "local:", conn.LocalAddr(), "remote:", conn.RemoteAddr())
 
 	connClient.conn = NewConn(conn, 4*1024)
 
-	log.Println("HandshakeClient....")
+	logger.Println("HandshakeClient....")
 	if err := connClient.conn.HandshakeClient(); err != nil {
 		return err
 	}
 
-	log.Println("writeConnectMsg....")
+	logger.Println("writeConnectMsg....")
 	if err := connClient.writeConnectMsg(); err != nil {
 		return err
 	}
-	log.Println("writeCreateStreamMsg....")
+	logger.Println("writeCreateStreamMsg....")
 	if err := connClient.writeCreateStreamMsg(); err != nil {
-		log.Println("writeCreateStreamMsg error", err)
+		logger.Println("writeCreateStreamMsg error", err)
 		return err
 	}
 
-	log.Println("method control:", method, av.PUBLISH, av.PLAY)
+	logger.Println("method control:", method, av.PUBLISH, av.PLAY)
 	if method == av.PUBLISH {
 		if err := connClient.writePublishMsg(); err != nil {
 			return err

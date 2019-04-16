@@ -3,7 +3,7 @@ package amf
 import (
 	"bytes"
 	"fmt"
-	"log"
+	"git.scsv.online/go/base/logger"
 )
 
 const (
@@ -22,7 +22,7 @@ func init() {
 	b := bytes.NewBuffer(nil)
 	encoder := &Encoder{}
 	if _, err := encoder.Encode(b, SetDataFrame, AMF0); err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
 	}
 	setFrameFrame = b.Bytes()
 }
