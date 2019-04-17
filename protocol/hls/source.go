@@ -10,6 +10,7 @@ import (
 	"github.com/NothingYF/livego/container/flv"
 	"github.com/NothingYF/livego/container/ts"
 	"git.scsv.online/go/base/logger"
+	"git.scsv.online/go/base/util"
 )
 
 const (
@@ -119,12 +120,7 @@ func (source *Source) Write(p *av.Packet) (err error) {
 }
 
 func (source *Source) SendPacket() error {
-	defer func() {
-		logger.Debug("[%v] hls sender stop", source.info)
-		if r := recover(); r != nil {
-			logger.Println("hls SendPacket panic: ", r)
-		}
-	}()
+	defer util.PanicTrace(false)
 
 	logger.Debug("[%v] hls sender start", source.info)
 	for {

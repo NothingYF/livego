@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"git.scsv.online/go/base/logger"
+	"git.scsv.online/go/base/util"
 )
 
 var (
@@ -304,6 +305,8 @@ func (s *Stream) SendStaticPush(packet av.Packet) {
 }
 
 func (s *Stream) TransStart() {
+	defer util.PanicTrace(false)
+
 	s.isStart = true
 	var p av.Packet
 

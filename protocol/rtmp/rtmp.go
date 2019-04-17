@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 	"git.scsv.online/go/base/logger"
+	"git.scsv.online/go/base/util"
 )
 
 const (
@@ -77,11 +78,8 @@ func NewRtmpServer(h av.Handler, getter av.GetWriter) *Server {
 }
 
 func (s *Server) Serve(listener net.Listener) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			logger.Println("rtmp serve panic: ", r)
-		}
-	}()
+	defer util.PanicTrace(false)
+
 
 	for {
 		var netconn net.Conn
@@ -97,6 +95,8 @@ func (s *Server) Serve(listener net.Listener) (err error) {
 }
 
 func (s *Server) handleConn(conn *core.Conn) error {
+	defer util.PanicTrace(false)
+
 	if err := conn.HandshakeServer(); err != nil {
 		conn.Close()
 		logger.Println("handleConn HandshakeServer err:", err)
